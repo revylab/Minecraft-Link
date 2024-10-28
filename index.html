@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Download Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary: #2e9244;
+            --secondary: #255547;
+            --accent: #48bf53;
+            --dark: #1a1a1a;
+            --light: #ffffff;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark), #2a2a2a);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(46, 146, 68, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(37, 85, 71, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #aaa;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0;
+        }
+
+        .minecraft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            padding: 2rem 1rem;
+            perspective: 1000px;
+        }
+
+        .minecraft-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(20px) rotateX(10deg);
+        }
+
+        .minecraft-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .minecraft-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .minecraft-card:hover {
+            transform: translateY(-10px) rotateX(0deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .minecraft-card:hover .card-icon {
+            transform: rotateY(180deg);
+        }
+
+        .card-icon svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-icon .back-icon {
+            transform: rotateY(180deg);
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--light) 30%, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-version {
+            font-size: 1rem;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .version-badge {
+            background: rgba(72, 191, 83, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .download-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .download-btn {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%) skewX(-15deg);
+            transition: transform 0.5s ease;
+        }
+
+        .download-btn:hover::before {
+            transform: translateX(100%) skewX(-15deg);
+        }
+
+        .download-btn.mediafire {
+            background: linear-gradient(45deg, #4D7ABE, #3d62a3);
+            color: white;
+        }
+
+        .download-btn.github {
+            background: linear-gradient(45deg, #333, #222);
+            color: white;
+        }
+
+        .download-btn.drive {
+            background: linear-gradient(45deg, #FFC107, #FFA000);
+            color: black;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-icon {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .download-btn:hover .download-icon {
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            color: var(--light);
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-message {
+            color: #aaa;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .hero {
+                padding: 3rem 0;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .minecraft-card {
+                padding: 1.5rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .card-icon {
+                margin: 0 auto;
+            }
+
+            .download-links {
+                gap: 0.75rem;
+            }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-overlay"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="hero">
+            <h1>Minecraft Download Hub</h1>
+            <p>Download berbagai versi Minecraft dengan aman dan mudah</p>
+        </div>
+        <div class="minecraft-grid" id="minecraftGrid"></div>
+    </div>
+
+    <div class="modal" id="downloadModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Konfirmasi Download</h2>
+            <p class="modal-message">Anda akan dialihkan ke halaman download. Pastikan sumber download aman dan terpercaya.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="confirmDownload">Ya, Lanjutkan</button>
+                <button class="modal-btn cancel" id="cancelDownload">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data JSON
+        const minecraftData = [
+            {
+                "name": "Minecraft Java Edition",
+                "version": "1.20.1",
+                "mediafire": "https://www.mediafire.com/file/minecraft.jar",
+                "github": "https://github.com/minecraft/java",
+                "drive": "none"
+            },
+            {
+                "name": "Minecraft Bedrock",
+                "version": "1.20.0",
+                "mediafire": "https://www.mediafire.com/file/minecraft-bedrock.apk",
+                "github": "none",
+                "drive": "https://drive.google.com/minecraft-bedrock"
+            },
+            {
+                "name": "Minecraft Education",
+                "version": "1.19.2",
+                "mediafire": "https://www.mediafire.com/file/minecraft-edu.exe",
+                "github": "none",
+                "drive": "none"
+            }
+        ];
+
+        // SVG Icons
+        const svgIcons = {
+            java: `
+                <svg class="front-icon" viewBox="0 0 100 100">
+                    <path d="M50,10 L90,30 L90,70 L50,90 L10,70 L10,30 Z" fill="#2e9244" stroke="#48bf53" stroke-width="2"/>
+                    <path d="M50,10 L50,90 M10,30 L90,30 M10,70 L90,70" stroke="#48bf53" stroke-width="2" fill="none"/>
+                    <circle cx="50" cy="50" r="15" fill="#48bf53"/>
+                </svg>
+                <svg class="back-icon" viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" fill="#2e9244" transform="rotate(45 50 50)"/>
+                    <circle cx="50" cy="50" r="20" fill="#48bf53"/>
+                </svg>
+            `,
+            bedrock: `
+                <svg class="front-icon" viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" rx="10" fill="#2e9244"/>
+                    <circle cx="50" cy="50" r="15" fill="#48bf53"/>
+                    <path d="M35,35 L65,65 M35,65 L65,35" stroke="#48bf53" stroke-width="4"/>
+                </svg>
+                <svg class="back-icon" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="30" fill="#2e9244"/>
+                    <path d="M35,50 L65,50 M50,35 L50,65" stroke="#48bf53" stroke-width="4"/>
+                </svg>
+            `,
+            education: `
+                <svg class="front-icon" viewBox="0 0 100 100">
+                    <path d="M50,20 L80,35 L80,65 L50,80 L20,65 L20,35 Z" fill="#2e9244"/>
+                    <path d="M35,45 L65,45 M35,55 L65,55" stroke="#48bf53" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="10" fill="#48bf53"/>
+                </svg>
+                <svg class="back-icon" viewBox="0 0 100 100">
+                    <path d="M30,30 L70,30 L70,70 L30,70 Z" fill="#2e9244"/>
+                    <circle cx="50" cy="50" r="15" fill="#48bf53"/>
+                </svg>
+            `
+        };
+
+        // Download icons
+        const downloadIcons = {
+            mediafire: `
+                <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,2 L12,16 M5,10 L12,17 L19,10" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <path d="M4,20 L20,20" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            `,
+            github: `
+                <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,2 A10,10 0 0,0 2,12 A10,10 0 0,0 12,22 A10,10 0 0,0 22,12 A10,10 0 0,0 12,2 Z M12,4 A8,8 0 0,1 20,12 A8,8 0 0,1 12,20 A8,8 0 0,1 4,12 A8,8 0 0,1 12,4 Z" />
+                    <path d="M12,7 L12,15 M8,11 L12,15 L16,11" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            `,
+            drive: `
+                <svg class="download-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4,15 L20,15 L18,20 L6,20 Z" />
+                    <path d="M8,4 L16,4 L20,15 L4,15 Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            `
+        };
+
+        // Fungsi untuk membuat particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.5;
+                container.appendChild(particle);
+            }
+        }
+
+        // Fungsi untuk membuat kartu Minecraft
+        function createMinecraftCard(data, index) {
+            const card = document.createElement('div');
+            card.className = 'minecraft-card';
+
+            const header = document.createElement('div');
+            header.className = 'card-header';
+            
+            const icon = document.createElement('div');
+            icon.className = 'card-icon';
+            // Memilih icon berdasarkan nama
+            let iconType = 'java';
+            if (data.name.toLowerCase().includes('bedrock')) iconType = 'bedrock';
+            if (data.name.toLowerCase().includes('education')) iconType = 'education';
+            icon.innerHTML = svgIcons[iconType];
+
+            const titleContainer = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'card-title';
+            title.textContent = data.name;
+
+            const version = document.createElement('div');
+            version.className = 'card-version';
+            version.innerHTML = `
+                <span class="version-badge">v${data.version}</span>
+                <span>Release</span>
+            `;
+
+            titleContainer.appendChild(title);
+            titleContainer.appendChild(version);
+            header.appendChild(icon);
+            header.appendChild(titleContainer);
+
+            const downloadLinks = document.createElement('div');
+            downloadLinks.className = 'download-links';
+
+            const links = [
+                { type: 'mediafire', label: 'Download dari MediaFire', icon: downloadIcons.mediafire },
+                { type: 'github', label: 'Download dari GitHub', icon: downloadIcons.github },
+                { type: 'drive', label: 'Download dari Drive', icon: downloadIcons.drive }
+            ];
+
+            links.forEach(link => {
+                if (data[link.type] !== 'none') {
+                    const btn = document.createElement('button');
+                    btn.className = `download-btn ${link.type}`;
+                    btn.innerHTML = `${link.icon}<span>${link.label}</span>`;
+                    btn.onclick = () => showDownloadConfirmation(data[link.type]);
+                    downloadLinks.appendChild(btn);
+                }
+            });
+
+            card.appendChild(header);
+            card.appendChild(downloadLinks);
+
+            // Animasi dengan GSAP
+            gsap.fromTo(card,
+                {
+                    opacity: 0,
+                    y: 50,
+                    rotateX: 10
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    rotateX: 0,
+                    duration: 0.8,
+                    delay: index * 0.2,
+                    ease: "power3.out"
+                }
+            );
+
+            return card;
+        }
+
+        // Fungsi untuk menampilkan modal konfirmasi
+        function showDownloadConfirmation(url) {
+            const modal = document.getElementById('downloadModal');
+            modal.classList.add('active');
+            
+            const confirmBtn = document.getElementById('confirmDownload');
+            const cancelBtn = document.getElementById('cancelDownload');
+            
+            confirmBtn.onclick = () => {
+                window.open(url, '_blank');
+                modal.classList.remove('active');
+            };
+            
+            cancelBtn.onclick = () => {
+                modal.classList.remove('active');
+            };
+
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            };
+        }
+
+        // Inisialisasi
+        window.onload = () => {
+            createParticles();
+
+            const grid = document.getElementById('minecraftGrid');
+            minecraftData.forEach((data, index) => {
+                grid.appendChild(createMinecraftCard(data, index));
+            });
+
+            // Animasi hero section
+            gsap.to('.hero h1', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.to('.hero p', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.3,
+                ease: 'power3.out'
+            });
+
+            // Tambahkan event listener untuk efek parallax
+            document.addEventListener('mousemove', (e) => {
+                const cards = document.querySelectorAll('.minecraft-card');
+                const mouseX = e.clientX / window.innerWidth - 0.5;
+                const mouseY = e.clientY / window.innerHeight - 0.5;
+
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const cardCenterX = rect.left + rect.width / 2;
+                    const cardCenterY = rect.top + rect.height / 2;
+                    const distanceX = (e.clientX - cardCenterX) / 30;
+                    const distanceY = (e.clientY - cardCenterY) / 30;
+
+                    gsap.to(card, {
+                        duration: 0.5,
+                        rotateY: distanceX * 0.5,
+                        rotateX: -distanceY * 0.5,
+                        ease: 'power2.out'
+                    });
+                });
+            });
+        };
+    </script>
+</body>
+</html>
